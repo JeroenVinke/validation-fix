@@ -30,11 +30,11 @@ System.register(['./validation/validation-config', './validation/validation', '.
       _export('ValidationLocale', _validationValidationLocale.ValidationLocale);
     }, function (_validationValidationResult) {
       for (var _key in _validationValidationResult) {
-        _export(_key, _validationValidationResult[_key]);
+        if (_key !== 'default') _export(_key, _validationValidationResult[_key]);
       }
     }, function (_validationValidationRules) {
       for (var _key2 in _validationValidationRules) {
-        _export(_key2, _validationValidationRules[_key2]);
+        if (_key2 !== 'default') _export(_key2, _validationValidationRules[_key2]);
       }
     }, function (_validationValidateCustomAttribute) {
       _export('ValidateCustomAttribute', _validationValidateCustomAttribute.ValidateCustomAttribute);

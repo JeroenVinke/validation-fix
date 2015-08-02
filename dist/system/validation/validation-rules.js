@@ -3,7 +3,7 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
 
   var Utilities, ValidationLocale, ValidationRule, URLValidationRule, EmailValidationRule, MinimumLengthValidationRule, MaximumLengthValidationRule, BetweenLengthValidationRule, CustomFunctionValidationRule, NumericValidationRule, RegexValidationRule, ContainsOnlyValidationRule, MinimumValueValidationRule, MinimumInclusiveValueValidationRule, MaximumValueValidationRule, MaximumInclusiveValueValidationRule, BetweenValueValidationRule, DigitValidationRule, NoSpacesValidationRule, AlphaNumericValidationRule, AlphaValidationRule, AlphaOrWhitespaceValidationRule, AlphaNumericOrWhitespaceValidationRule, MediumPasswordValidationRule, StrongPasswordValidationRule, EqualityValidationRuleBase, EqualityValidationRule, EqualityWithOtherLabelValidationRule, InEqualityValidationRule, InEqualityWithOtherLabelValidationRule, InCollectionValidationRule;
 
-  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+  function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
   function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -15,14 +15,14 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
     }],
     execute: function () {
       ValidationRule = (function () {
-        function ValidationRule(threshold, onValidate, message) {
+        function ValidationRule(threshold, onValidate, message, ruleName) {
           _classCallCheck(this, ValidationRule);
 
           this.onValidate = onValidate;
           this.threshold = threshold;
           this.message = message;
           this.errorMessage = null;
-          this.ruleName = this.constructor.name;
+          this.ruleName = ruleName;
         }
 
         ValidationRule.prototype.withMessage = function withMessage(message) {
@@ -80,80 +80,6 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('ValidationRule', ValidationRule);
 
       URLValidationRule = (function (_ValidationRule) {
-        function URLValidationRule(threshold) {
-          _classCallCheck(this, URLValidationRule);
-
-          var default_url_options = {
-            protocols: ['http', 'https', 'ftp'],
-            require_tld: true,
-            require_protocol: false,
-            allow_underscores: true,
-            allow_trailing_dot: false,
-            allow_protocol_relative_urls: true
-          };
-          if (threshold === undefined) {
-            threshold = default_url_options;
-          }
-
-          _ValidationRule.call(this, threshold, function (newValue, threshold) {
-            var url = newValue;
-            if (!url || url.length >= 2083 || /\s/.test(url)) {
-              return false;
-            }
-            if (url.indexOf('mailto:') === 0) {
-              return false;
-            }
-            var protocol, auth, host, hostname, port, port_str, split;
-            split = url.split('://');
-            if (split.length > 1) {
-              protocol = split.shift();
-              if (threshold.protocols.indexOf(protocol) === -1) {
-                return false;
-              }
-            } else if (threshold.require_protocol) {
-              return false;
-            } else if (threshold.allow_protocol_relative_urls && url.substr(0, 2) === '//') {
-              split[0] = url.substr(2);
-            }
-            url = split.join('://');
-            split = url.split('#');
-            url = split.shift();
-
-            split = url.split('?');
-            url = split.shift();
-
-            split = url.split('/');
-            url = split.shift();
-            split = url.split('@');
-            if (split.length > 1) {
-              auth = split.shift();
-              if (auth.indexOf(':') >= 0 && auth.split(':').length > 2) {
-                return false;
-              }
-            }
-            hostname = split.join('@');
-            split = hostname.split(':');
-            host = split.shift();
-            if (split.length) {
-              port_str = split.join(':');
-              port = parseInt(port_str, 10);
-              if (!/^[0-9]+$/.test(port_str) || port <= 0 || port > 65535) {
-                return false;
-              }
-            }
-            if (!URLValidationRule.isIP(host) && !URLValidationRule.isFQDN(host, threshold) && host !== 'localhost') {
-              return false;
-            }
-            if (threshold.host_whitelist && threshold.host_whitelist.indexOf(host) === -1) {
-              return false;
-            }
-            if (threshold.host_blacklist && threshold.host_blacklist.indexOf(host) !== -1) {
-              return false;
-            }
-            return true;
-          });
-        }
-
         _inherits(URLValidationRule, _ValidationRule);
 
         URLValidationRule.isIP = function isIP(str, version) {
@@ -235,30 +161,86 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
           return true;
         };
 
+        function URLValidationRule(threshold) {
+          _classCallCheck(this, URLValidationRule);
+
+          var default_url_options = {
+            protocols: ['http', 'https', 'ftp'],
+            require_tld: true,
+            require_protocol: false,
+            allow_underscores: true,
+            allow_trailing_dot: false,
+            allow_protocol_relative_urls: true
+          };
+          if (threshold === undefined) {
+            threshold = default_url_options;
+          }
+
+          _ValidationRule.call(this, threshold, function (newValue, threshold) {
+            var url = newValue;
+            if (!url || url.length >= 2083 || /\s/.test(url)) {
+              return false;
+            }
+            if (url.indexOf('mailto:') === 0) {
+              return false;
+            }
+            var protocol, auth, host, hostname, port, port_str, split;
+            split = url.split('://');
+            if (split.length > 1) {
+              protocol = split.shift();
+              if (threshold.protocols.indexOf(protocol) === -1) {
+                return false;
+              }
+            } else if (threshold.require_protocol) {
+              return false;
+            } else if (threshold.allow_protocol_relative_urls && url.substr(0, 2) === '//') {
+              split[0] = url.substr(2);
+            }
+            url = split.join('://');
+            split = url.split('#');
+            url = split.shift();
+
+            split = url.split('?');
+            url = split.shift();
+
+            split = url.split('/');
+            url = split.shift();
+            split = url.split('@');
+            if (split.length > 1) {
+              auth = split.shift();
+              if (auth.indexOf(':') >= 0 && auth.split(':').length > 2) {
+                return false;
+              }
+            }
+            hostname = split.join('@');
+            split = hostname.split(':');
+            host = split.shift();
+            if (split.length) {
+              port_str = split.join(':');
+              port = parseInt(port_str, 10);
+              if (!/^[0-9]+$/.test(port_str) || port <= 0 || port > 65535) {
+                return false;
+              }
+            }
+            if (!URLValidationRule.isIP(host) && !URLValidationRule.isFQDN(host, threshold) && host !== 'localhost') {
+              return false;
+            }
+            if (threshold.host_whitelist && threshold.host_whitelist.indexOf(host) === -1) {
+              return false;
+            }
+            if (threshold.host_blacklist && threshold.host_blacklist.indexOf(host) !== -1) {
+              return false;
+            }
+            return true;
+          }, null, 'URLValidationRule');
+        }
+
         return URLValidationRule;
       })(ValidationRule);
 
       _export('URLValidationRule', URLValidationRule);
 
       EmailValidationRule = (function (_ValidationRule2) {
-        function EmailValidationRule() {
-          _classCallCheck(this, EmailValidationRule);
-
-          _ValidationRule2.call(this, null, function (newValue, threshold) {
-            if (/\s/.test(newValue)) {
-              return false;
-            }
-            var parts = newValue.split('@');
-            var domain = parts.pop();
-            var user = parts.join('@');
-
-            if (!EmailValidationRule.isFQDN(domain)) {
-              return false;
-            }
-            return EmailValidationRule.testEmailUserUtf8Regex(user);
-          });
-        }
-
         _inherits(EmailValidationRule, _ValidationRule2);
 
         EmailValidationRule.testEmailUserUtf8Regex = function testEmailUserUtf8Regex(user) {
@@ -284,21 +266,39 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
           return true;
         };
 
+        function EmailValidationRule() {
+          _classCallCheck(this, EmailValidationRule);
+
+          _ValidationRule2.call(this, null, function (newValue, threshold) {
+            if (/\s/.test(newValue)) {
+              return false;
+            }
+            var parts = newValue.split('@');
+            var domain = parts.pop();
+            var user = parts.join('@');
+
+            if (!EmailValidationRule.isFQDN(domain)) {
+              return false;
+            }
+            return EmailValidationRule.testEmailUserUtf8Regex(user);
+          }, null, 'EmailValidationRule');
+        }
+
         return EmailValidationRule;
       })(ValidationRule);
 
       _export('EmailValidationRule', EmailValidationRule);
 
       MinimumLengthValidationRule = (function (_ValidationRule3) {
+        _inherits(MinimumLengthValidationRule, _ValidationRule3);
+
         function MinimumLengthValidationRule(minimumLength) {
           _classCallCheck(this, MinimumLengthValidationRule);
 
           _ValidationRule3.call(this, minimumLength, function (newValue, minimumLength) {
             return newValue.length !== undefined && newValue.length >= minimumLength;
-          });
+          }, null, 'MinimumLengthValidationRule');
         }
-
-        _inherits(MinimumLengthValidationRule, _ValidationRule3);
 
         return MinimumLengthValidationRule;
       })(ValidationRule);
@@ -306,15 +306,15 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('MinimumLengthValidationRule', MinimumLengthValidationRule);
 
       MaximumLengthValidationRule = (function (_ValidationRule4) {
+        _inherits(MaximumLengthValidationRule, _ValidationRule4);
+
         function MaximumLengthValidationRule(maximumLength) {
           _classCallCheck(this, MaximumLengthValidationRule);
 
           _ValidationRule4.call(this, maximumLength, function (newValue, maximumLength) {
             return newValue.length !== undefined && newValue.length <= maximumLength;
-          });
+          }, null, 'MaximumLengthValidationRule');
         }
-
-        _inherits(MaximumLengthValidationRule, _ValidationRule4);
 
         return MaximumLengthValidationRule;
       })(ValidationRule);
@@ -322,15 +322,15 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('MaximumLengthValidationRule', MaximumLengthValidationRule);
 
       BetweenLengthValidationRule = (function (_ValidationRule5) {
+        _inherits(BetweenLengthValidationRule, _ValidationRule5);
+
         function BetweenLengthValidationRule(minimumLength, maximumLength) {
           _classCallCheck(this, BetweenLengthValidationRule);
 
           _ValidationRule5.call(this, { minimumLength: minimumLength, maximumLength: maximumLength }, function (newValue, threshold) {
             return newValue.length !== undefined && newValue.length >= threshold.minimumLength && newValue.length <= threshold.maximumLength;
-          });
+          }, null, 'BetweenLengthValidationRule');
         }
-
-        _inherits(BetweenLengthValidationRule, _ValidationRule5);
 
         return BetweenLengthValidationRule;
       })(ValidationRule);
@@ -338,13 +338,13 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('BetweenLengthValidationRule', BetweenLengthValidationRule);
 
       CustomFunctionValidationRule = (function (_ValidationRule6) {
+        _inherits(CustomFunctionValidationRule, _ValidationRule6);
+
         function CustomFunctionValidationRule(customFunction, threshold) {
           _classCallCheck(this, CustomFunctionValidationRule);
 
-          _ValidationRule6.call(this, threshold, customFunction);
+          _ValidationRule6.call(this, threshold, customFunction, null, 'CustomFunctionValidationRule');
         }
-
-        _inherits(CustomFunctionValidationRule, _ValidationRule6);
 
         return CustomFunctionValidationRule;
       })(ValidationRule);
@@ -352,6 +352,8 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('CustomFunctionValidationRule', CustomFunctionValidationRule);
 
       NumericValidationRule = (function (_ValidationRule7) {
+        _inherits(NumericValidationRule, _ValidationRule7);
+
         function NumericValidationRule() {
           _classCallCheck(this, NumericValidationRule);
 
@@ -359,10 +361,8 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
             var numericRegex = locale.setting('numericRegex');
             var floatValue = parseFloat(newValue);
             return !Number.isNaN(parseFloat(newValue)) && Number.isFinite(floatValue) && numericRegex.test(newValue);
-          });
+          }, null, 'NumericValidationRule');
         }
-
-        _inherits(NumericValidationRule, _ValidationRule7);
 
         return NumericValidationRule;
       })(ValidationRule);
@@ -370,15 +370,15 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('NumericValidationRule', NumericValidationRule);
 
       RegexValidationRule = (function (_ValidationRule8) {
-        function RegexValidationRule(regex) {
+        _inherits(RegexValidationRule, _ValidationRule8);
+
+        function RegexValidationRule(regex, ruleName) {
           _classCallCheck(this, RegexValidationRule);
 
           _ValidationRule8.call(this, regex, function (newValue, regex) {
             return regex.test(newValue);
-          });
+          }, null, ruleName || 'RegexValidationRule');
         }
-
-        _inherits(RegexValidationRule, _ValidationRule8);
 
         return RegexValidationRule;
       })(ValidationRule);
@@ -386,13 +386,13 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('RegexValidationRule', RegexValidationRule);
 
       ContainsOnlyValidationRule = (function (_RegexValidationRule) {
+        _inherits(ContainsOnlyValidationRule, _RegexValidationRule);
+
         function ContainsOnlyValidationRule(regex) {
           _classCallCheck(this, ContainsOnlyValidationRule);
 
-          _RegexValidationRule.call(this, regex);
+          _RegexValidationRule.call(this, regex, 'ContainsOnlyValidationRule');
         }
-
-        _inherits(ContainsOnlyValidationRule, _RegexValidationRule);
 
         return ContainsOnlyValidationRule;
       })(RegexValidationRule);
@@ -400,15 +400,15 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('ContainsOnlyValidationRule', ContainsOnlyValidationRule);
 
       MinimumValueValidationRule = (function (_ValidationRule9) {
+        _inherits(MinimumValueValidationRule, _ValidationRule9);
+
         function MinimumValueValidationRule(minimumValue) {
           _classCallCheck(this, MinimumValueValidationRule);
 
           _ValidationRule9.call(this, minimumValue, function (newValue, minimumValue) {
             return Utilities.getValue(minimumValue) < newValue;
-          });
+          }, null, 'MinimumValueValidationRule');
         }
-
-        _inherits(MinimumValueValidationRule, _ValidationRule9);
 
         return MinimumValueValidationRule;
       })(ValidationRule);
@@ -416,15 +416,15 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('MinimumValueValidationRule', MinimumValueValidationRule);
 
       MinimumInclusiveValueValidationRule = (function (_ValidationRule10) {
+        _inherits(MinimumInclusiveValueValidationRule, _ValidationRule10);
+
         function MinimumInclusiveValueValidationRule(minimumValue) {
           _classCallCheck(this, MinimumInclusiveValueValidationRule);
 
           _ValidationRule10.call(this, minimumValue, function (newValue, minimumValue) {
             return Utilities.getValue(minimumValue) <= newValue;
-          });
+          }, null, 'MinimumInclusiveValueValidationRule');
         }
-
-        _inherits(MinimumInclusiveValueValidationRule, _ValidationRule10);
 
         return MinimumInclusiveValueValidationRule;
       })(ValidationRule);
@@ -432,15 +432,15 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('MinimumInclusiveValueValidationRule', MinimumInclusiveValueValidationRule);
 
       MaximumValueValidationRule = (function (_ValidationRule11) {
+        _inherits(MaximumValueValidationRule, _ValidationRule11);
+
         function MaximumValueValidationRule(maximumValue) {
           _classCallCheck(this, MaximumValueValidationRule);
 
           _ValidationRule11.call(this, maximumValue, function (newValue, maximumValue) {
             return newValue < Utilities.getValue(maximumValue);
-          });
+          }, null, 'MaximumValueValidationRule');
         }
-
-        _inherits(MaximumValueValidationRule, _ValidationRule11);
 
         return MaximumValueValidationRule;
       })(ValidationRule);
@@ -448,15 +448,15 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('MaximumValueValidationRule', MaximumValueValidationRule);
 
       MaximumInclusiveValueValidationRule = (function (_ValidationRule12) {
+        _inherits(MaximumInclusiveValueValidationRule, _ValidationRule12);
+
         function MaximumInclusiveValueValidationRule(maximumValue) {
           _classCallCheck(this, MaximumInclusiveValueValidationRule);
 
           _ValidationRule12.call(this, maximumValue, function (newValue, maximumValue) {
             return newValue <= Utilities.getValue(maximumValue);
-          });
+          }, null, 'MaximumInclusiveValueValidationRule');
         }
-
-        _inherits(MaximumInclusiveValueValidationRule, _ValidationRule12);
 
         return MaximumInclusiveValueValidationRule;
       })(ValidationRule);
@@ -464,15 +464,15 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('MaximumInclusiveValueValidationRule', MaximumInclusiveValueValidationRule);
 
       BetweenValueValidationRule = (function (_ValidationRule13) {
+        _inherits(BetweenValueValidationRule, _ValidationRule13);
+
         function BetweenValueValidationRule(minimumValue, maximumValue) {
           _classCallCheck(this, BetweenValueValidationRule);
 
           _ValidationRule13.call(this, { minimumValue: minimumValue, maximumValue: maximumValue }, function (newValue, threshold) {
             return Utilities.getValue(threshold.minimumValue) <= newValue && newValue <= Utilities.getValue(threshold.maximumValue);
-          });
+          }, null, 'BetweenValueValidationRule');
         }
-
-        _inherits(BetweenValueValidationRule, _ValidationRule13);
 
         return BetweenValueValidationRule;
       })(ValidationRule);
@@ -480,15 +480,16 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('BetweenValueValidationRule', BetweenValueValidationRule);
 
       DigitValidationRule = (function (_ValidationRule14) {
+        _inherits(DigitValidationRule, _ValidationRule14);
+
         function DigitValidationRule() {
           _classCallCheck(this, DigitValidationRule);
 
           _ValidationRule14.call(this, null, function (newValue, threshold) {
-            return /^\d+$/.test(newValue);
-          });
+            return (/^\d+$/.test(newValue)
+            );
+          }, null, 'DigitValidationRule');
         }
-
-        _inherits(DigitValidationRule, _ValidationRule14);
 
         return DigitValidationRule;
       })(ValidationRule);
@@ -496,15 +497,16 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('DigitValidationRule', DigitValidationRule);
 
       NoSpacesValidationRule = (function (_ValidationRule15) {
+        _inherits(NoSpacesValidationRule, _ValidationRule15);
+
         function NoSpacesValidationRule() {
           _classCallCheck(this, NoSpacesValidationRule);
 
           _ValidationRule15.call(this, null, function (newValue, threshold) {
-            return /^\S*$/.test(newValue);
-          });
+            return (/^\S*$/.test(newValue)
+            );
+          }, null, 'NoSpacesValidationRule');
         }
-
-        _inherits(NoSpacesValidationRule, _ValidationRule15);
 
         return NoSpacesValidationRule;
       })(ValidationRule);
@@ -512,15 +514,16 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('NoSpacesValidationRule', NoSpacesValidationRule);
 
       AlphaNumericValidationRule = (function (_ValidationRule16) {
+        _inherits(AlphaNumericValidationRule, _ValidationRule16);
+
         function AlphaNumericValidationRule() {
           _classCallCheck(this, AlphaNumericValidationRule);
 
           _ValidationRule16.call(this, null, function (newValue, threshold) {
-            return /^[a-z0-9]+$/i.test(newValue);
-          });
+            return (/^[a-z0-9]+$/i.test(newValue)
+            );
+          }, null, 'AlphaNumericValidationRule');
         }
-
-        _inherits(AlphaNumericValidationRule, _ValidationRule16);
 
         return AlphaNumericValidationRule;
       })(ValidationRule);
@@ -528,15 +531,16 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('AlphaNumericValidationRule', AlphaNumericValidationRule);
 
       AlphaValidationRule = (function (_ValidationRule17) {
+        _inherits(AlphaValidationRule, _ValidationRule17);
+
         function AlphaValidationRule() {
           _classCallCheck(this, AlphaValidationRule);
 
           _ValidationRule17.call(this, null, function (newValue, threshold) {
-            return /^[a-z]+$/i.test(newValue);
-          });
+            return (/^[a-z]+$/i.test(newValue)
+            );
+          }, null, 'AlphaValidationRule');
         }
-
-        _inherits(AlphaValidationRule, _ValidationRule17);
 
         return AlphaValidationRule;
       })(ValidationRule);
@@ -544,15 +548,16 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('AlphaValidationRule', AlphaValidationRule);
 
       AlphaOrWhitespaceValidationRule = (function (_ValidationRule18) {
+        _inherits(AlphaOrWhitespaceValidationRule, _ValidationRule18);
+
         function AlphaOrWhitespaceValidationRule() {
           _classCallCheck(this, AlphaOrWhitespaceValidationRule);
 
           _ValidationRule18.call(this, null, function (newValue, threshold) {
-            return /^[a-z\s]+$/i.test(newValue);
-          });
+            return (/^[a-z\s]+$/i.test(newValue)
+            );
+          }, null, 'AlphaOrWhitespaceValidationRule');
         }
-
-        _inherits(AlphaOrWhitespaceValidationRule, _ValidationRule18);
 
         return AlphaOrWhitespaceValidationRule;
       })(ValidationRule);
@@ -560,15 +565,16 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('AlphaOrWhitespaceValidationRule', AlphaOrWhitespaceValidationRule);
 
       AlphaNumericOrWhitespaceValidationRule = (function (_ValidationRule19) {
+        _inherits(AlphaNumericOrWhitespaceValidationRule, _ValidationRule19);
+
         function AlphaNumericOrWhitespaceValidationRule() {
           _classCallCheck(this, AlphaNumericOrWhitespaceValidationRule);
 
           _ValidationRule19.call(this, null, function (newValue, threshold) {
-            return /^[a-z0-9\s]+$/i.test(newValue);
-          });
+            return (/^[a-z0-9\s]+$/i.test(newValue)
+            );
+          }, null, 'AlphaNumericOrWhitespaceValidationRule');
         }
-
-        _inherits(AlphaNumericOrWhitespaceValidationRule, _ValidationRule19);
 
         return AlphaNumericOrWhitespaceValidationRule;
       })(ValidationRule);
@@ -576,7 +582,9 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('AlphaNumericOrWhitespaceValidationRule', AlphaNumericOrWhitespaceValidationRule);
 
       MediumPasswordValidationRule = (function (_ValidationRule20) {
-        function MediumPasswordValidationRule(minimumComplexityLevel) {
+        _inherits(MediumPasswordValidationRule, _ValidationRule20);
+
+        function MediumPasswordValidationRule(minimumComplexityLevel, ruleName) {
           _classCallCheck(this, MediumPasswordValidationRule);
 
           _ValidationRule20.call(this, minimumComplexityLevel ? minimumComplexityLevel : 3, function (newValue, threshold) {
@@ -588,10 +596,8 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
             strength += /[0-9]+/.test(newValue) ? 1 : 0;
             strength += /[\W]+/.test(newValue) ? 1 : 0;
             return strength >= threshold;
-          });
+          }, null, ruleName || 'MediumPasswordValidationRule');
         }
-
-        _inherits(MediumPasswordValidationRule, _ValidationRule20);
 
         return MediumPasswordValidationRule;
       })(ValidationRule);
@@ -599,13 +605,13 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('MediumPasswordValidationRule', MediumPasswordValidationRule);
 
       StrongPasswordValidationRule = (function (_MediumPasswordValidationRule) {
+        _inherits(StrongPasswordValidationRule, _MediumPasswordValidationRule);
+
         function StrongPasswordValidationRule() {
           _classCallCheck(this, StrongPasswordValidationRule);
 
-          _MediumPasswordValidationRule.call(this, 4);
+          _MediumPasswordValidationRule.call(this, 4, 'StrongPasswordValidationRule');
         }
-
-        _inherits(StrongPasswordValidationRule, _MediumPasswordValidationRule);
 
         return StrongPasswordValidationRule;
       })(MediumPasswordValidationRule);
@@ -613,7 +619,9 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('StrongPasswordValidationRule', StrongPasswordValidationRule);
 
       EqualityValidationRuleBase = (function (_ValidationRule21) {
-        function EqualityValidationRuleBase(otherValue, equality, otherValueLabel) {
+        _inherits(EqualityValidationRuleBase, _ValidationRule21);
+
+        function EqualityValidationRuleBase(otherValue, equality, otherValueLabel, ruleName) {
           _classCallCheck(this, EqualityValidationRuleBase);
 
           _ValidationRule21.call(this, {
@@ -624,10 +632,8 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
             var otherValue = Utilities.getValue(threshold.otherValue);
             if (newValue instanceof Date && otherValue instanceof Date) return threshold.equality === (newValue.getTime() === otherValue.getTime());
             return threshold.equality === (newValue === otherValue);
-          });
+          }, null, ruleName || 'EqualityValidationRuleBase');
         }
-
-        _inherits(EqualityValidationRuleBase, _ValidationRule21);
 
         return EqualityValidationRuleBase;
       })(ValidationRule);
@@ -635,13 +641,13 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('EqualityValidationRuleBase', EqualityValidationRuleBase);
 
       EqualityValidationRule = (function (_EqualityValidationRuleBase) {
+        _inherits(EqualityValidationRule, _EqualityValidationRuleBase);
+
         function EqualityValidationRule(otherValue) {
           _classCallCheck(this, EqualityValidationRule);
 
-          _EqualityValidationRuleBase.call(this, otherValue, true);
+          _EqualityValidationRuleBase.call(this, otherValue, true, null, 'EqualityValidationRule');
         }
-
-        _inherits(EqualityValidationRule, _EqualityValidationRuleBase);
 
         return EqualityValidationRule;
       })(EqualityValidationRuleBase);
@@ -649,13 +655,13 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('EqualityValidationRule', EqualityValidationRule);
 
       EqualityWithOtherLabelValidationRule = (function (_EqualityValidationRuleBase2) {
+        _inherits(EqualityWithOtherLabelValidationRule, _EqualityValidationRuleBase2);
+
         function EqualityWithOtherLabelValidationRule(otherValue, otherLabel) {
           _classCallCheck(this, EqualityWithOtherLabelValidationRule);
 
-          _EqualityValidationRuleBase2.call(this, otherValue, true, otherLabel);
+          _EqualityValidationRuleBase2.call(this, otherValue, true, otherLabel, 'EqualityWithOtherLabelValidationRule');
         }
-
-        _inherits(EqualityWithOtherLabelValidationRule, _EqualityValidationRuleBase2);
 
         return EqualityWithOtherLabelValidationRule;
       })(EqualityValidationRuleBase);
@@ -663,13 +669,13 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('EqualityWithOtherLabelValidationRule', EqualityWithOtherLabelValidationRule);
 
       InEqualityValidationRule = (function (_EqualityValidationRuleBase3) {
+        _inherits(InEqualityValidationRule, _EqualityValidationRuleBase3);
+
         function InEqualityValidationRule(otherValue) {
           _classCallCheck(this, InEqualityValidationRule);
 
-          _EqualityValidationRuleBase3.call(this, otherValue, false);
+          _EqualityValidationRuleBase3.call(this, otherValue, false, null, 'InEqualityValidationRule');
         }
-
-        _inherits(InEqualityValidationRule, _EqualityValidationRuleBase3);
 
         return InEqualityValidationRule;
       })(EqualityValidationRuleBase);
@@ -677,13 +683,13 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('InEqualityValidationRule', InEqualityValidationRule);
 
       InEqualityWithOtherLabelValidationRule = (function (_EqualityValidationRuleBase4) {
+        _inherits(InEqualityWithOtherLabelValidationRule, _EqualityValidationRuleBase4);
+
         function InEqualityWithOtherLabelValidationRule(otherValue, otherLabel) {
           _classCallCheck(this, InEqualityWithOtherLabelValidationRule);
 
-          _EqualityValidationRuleBase4.call(this, otherValue, false, otherLabel);
+          _EqualityValidationRuleBase4.call(this, otherValue, false, otherLabel, 'InEqualityWithOtherLabelValidationRule');
         }
-
-        _inherits(InEqualityWithOtherLabelValidationRule, _EqualityValidationRuleBase4);
 
         return InEqualityWithOtherLabelValidationRule;
       })(EqualityValidationRuleBase);
@@ -691,6 +697,8 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
       _export('InEqualityWithOtherLabelValidationRule', InEqualityWithOtherLabelValidationRule);
 
       InCollectionValidationRule = (function (_ValidationRule22) {
+        _inherits(InCollectionValidationRule, _ValidationRule22);
+
         function InCollectionValidationRule(collection) {
           _classCallCheck(this, InCollectionValidationRule);
 
@@ -700,10 +708,8 @@ System.register(['../validation/utilities', '../validation/validation-locale'], 
               if (newValue === collection[i]) return true;
             }
             return false;
-          });
+          }, null, 'InCollectionValidationRule');
         }
-
-        _inherits(InCollectionValidationRule, _ValidationRule22);
 
         return InCollectionValidationRule;
       })(ValidationRule);
