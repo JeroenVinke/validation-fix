@@ -5,13 +5,13 @@ System.register(['./validation/validation-config', './validation/validation', '.
 
   _export('configure', configure);
 
-  function configure(aurelia, configCallback) {
+  function configure(frameworkConfig, configCallback) {
 
-    aurelia.globalizeResources('./validation/validate-custom-attribute');
+    frameworkConfig.globalResources('./validation/validate-custom-attribute');
     if (configCallback !== undefined && typeof configCallback === 'function') {
       configCallback(Validation.defaults);
     }
-    aurelia.withSingleton(ValidationConfig, Validation.defaults);
+    frameworkConfig.singleton(ValidationConfig, Validation.defaults);
     return Validation.defaults.locale();
   }
 

@@ -22,13 +22,13 @@ define(['exports', './validation/validation-config', './validation/validation', 
   exports.ValidateCustomAttributeViewStrategyBase = _validationValidateCustomAttributeViewStrategy.ValidateCustomAttributeViewStrategyBase;
   exports.ensure = _validationDecorators.ensure;
 
-  function configure(aurelia, configCallback) {
+  function configure(frameworkConfig, configCallback) {
 
-    aurelia.globalizeResources('./validation/validate-custom-attribute');
+    frameworkConfig.globalResources('./validation/validate-custom-attribute');
     if (configCallback !== undefined && typeof configCallback === 'function') {
       configCallback(_validationValidation.Validation.defaults);
     }
-    aurelia.withSingleton(_validationValidationConfig.ValidationConfig, _validationValidation.Validation.defaults);
+    frameworkConfig.singleton(_validationValidationConfig.ValidationConfig, _validationValidation.Validation.defaults);
     return _validationValidation.Validation.defaults.locale();
   }
 });
